@@ -25,10 +25,6 @@
     "react-test-renderer": "16.0.0",
     "xopen": "1.0.0"
   },
-  "engines":{
-    "npm": "~6.4.1",
-    "node": "~8.11.2"
-  },
   "jest": {
     "preset": "react-vr"
   }
