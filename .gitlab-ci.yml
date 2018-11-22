@@ -37,7 +37,7 @@ deploy_app_to_dokku:
     - deploy
   script:
     - 'ssh dokku@$DEPLOY_SRV apps:create $CI_PROJECT_NAME || true'
-    - sudo apt-get install php
+    - apt-get install php
     - ssh dokku@$DEPLOY_SRV config:set $CI_PROJECT_NAME BUILDPACK_URL=https://github.com/heroku/heroku-buildpack-php.git
     # push the app to the deploy server
     - git push dokku@$DEPLOY_SRV:$CI_PROJECT_NAME master
