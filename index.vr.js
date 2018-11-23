@@ -6,23 +6,35 @@ import {
   asset,
   Pano,
   Text,
+  Image,
   View,
   VrButton,
   Model,
   Animated,
   Sound
 } from 'react-vr';
-
-import {Easing,TextInput} from 'react-native';
+import Gallery, { imageTypes } from 'react-vr-image-gallery';
+import {Easing} from 'react-native';
 
 export default class Space extends React.Component {
     constructor(){
         super();
-        this.state = {planetName:""};
+        this.state = {planetName:"", zoom:0.2, message:"  "};
+        
     }
     handleClick(string){
-        //figure out how to get text of form input and assign to name to update which planet is being viewed
+        //changes state to update child components
         this.setState({planetName:string});
+        this.setState({message:"  "});
+        this.setState({zoom:0.2});
+        
+    }
+    handleClickPlanet(){
+        if(this.state.zoom == 0.2){
+            this.setState({zoom:0.5});
+          }else{
+            this.setState({zoom:0.2});
+          }
     }
   render() {
     return (
@@ -32,16 +44,17 @@ export default class Space extends React.Component {
         <Model style={{transform:[{translate:[0,-5,0]}]}}>
           <Sound source={{mp3: asset('music.mp3')}} loop={true}/>
         </Model>
-        <View><Planet name={this.state.planetName}/></View>
-        <View style={{
-                width:50,
-                flexDirection:'row',
-                transform: [{translate: [-4,-1,-5]}],
-              }}>
+        <View>
+            
+        <VrButton onClick={this.handleClickPlanet.bind(this)}>
+            <Planet name={this.state.planetName} zoom={this.state.zoom} message={this.state.message}/>
+        </VrButton>
+        </View>
+        <View style={{width:1, flexDirection:'row', transform: [{translate: [-4,-1,-5]}],}}>
         
             <VrButton onClick={this.handleClick.bind(this,"Sun")}>
                 <Text style={{
-                    backgroundColor: '#0009',
+                    backgroundColor: "#0009",
                     fontSize: 0.2,
                     fontWeight: '400',
                     layoutOrigin: [0.5, 0.5],
@@ -176,6 +189,11 @@ export default class Space extends React.Component {
                 </Text>
             </VrButton>
         </View>     
+        
+        <View style={{transform:[{translate:[4,4.5,-6]}]}}>
+            <Pictures name={this.state.planetName}/>
+        </View>
+
       </View>
       
     );
@@ -189,10 +207,15 @@ class Planet extends React.Component{
     super(props);
     this.state = { spin: new Animated.Value(0), zoom:0.2};
   }
-  componentDidMount(){
+  componentDidMount(nextProps){
     this.spinAnimation();
   }
-  
+  componentDidUpdate(prevProps){
+    if(this.props.zoom !== this.state.zoom){
+        console.log(this.props.zoom);
+        this.setState({zoom:this.props.zoom});
+    }
+  }
   spinAnimation() {
     this.state.spin.setValue(0);
     Animated.timing(
@@ -205,11 +228,7 @@ class Planet extends React.Component{
     ).start( () => this.spinAnimation() );
   }
   handleClick(){
-      if(this.state.zoom == 0.2){
-        this.setState({zoom:0.5});
-      }else{
-        this.setState({zoom:0.2});
-      }
+     
   }
   
   render(){
@@ -217,30 +236,28 @@ class Planet extends React.Component{
     const AnimatedModel = Animated.createAnimatedComponent(Model);
     //could fetch location and source from json
     return(
-      <View>
-
-        <VrButton onClick={this.handleClick.bind(this)}>
-            <NasaInfo name = {this.props.name}/>
-        </VrButton>
-        
-      <AnimatedModel 
-        source={{
-          obj: asset(this.props.name+'.obj'),
-          mtl: asset(this.props.name+'.mtl')
-        }}
-        style={{
-          transform:[
-            {scaleX: this.state.zoom},
-            {scaleY: this.state.zoom},
-            {translate:[0,0,-1000]},
-            {rotateX: spin},
-            {rotateY: spin}
-            
-            
-          ]
-        }}
-        wireframe={false}
-      />
+        <View>
+            <View style={{width:2,height:1.5}}>
+                <NasaInfo name = {this.props.name} message={this.props.message}/>
+            </View>
+            <AnimatedModel 
+                source={{
+                obj: asset(this.props.name+'.obj'),
+                mtl: asset(this.props.name+'.mtl')
+                }}
+                style={{
+                transform:[
+                    {scaleX: this.state.zoom},
+                    {scaleY: this.state.zoom},
+                    {translate:[0,0,-1000]},
+                    {rotateX: spin},
+                    {rotateY: spin}
+                    
+                    
+                ]
+                }}
+                wireframe={false}
+            />
       </View>
     );
   }
@@ -253,7 +270,7 @@ class Planet extends React.Component{
 class NasaInfo extends React.Component{
   constructor(props) {
     super(props);
-    this.state = {message:"  ",name:"" , info: []};
+    this.state = {message:"  ", name:"" , info: [],bgcolor:"#0000"};
     
   }
   
@@ -267,6 +284,7 @@ class NasaInfo extends React.Component{
     if(this.props.name !== prevProps.name){
         console.log("New: " + this.props.name);
         console.log("Old: " + prevProps.name);
+        this.setState({message:this.props.message})
         this.setState({name:this.props.name});
         fetch('http://localhost:3000/'+this.props.name)
         .then(response => response.json())
@@ -297,9 +315,11 @@ class NasaInfo extends React.Component{
                 "\nSurface temperature: " + theinfo.temp +
                 "\nVolume: " + theinfo.volume )
     }); 
+    this.setState({bgcolor:"#0009"});
       
     }else{
       this.setState({message: "  "});
+      this.setState({bgcolor:"#0000"});
     }
 
   }
@@ -311,9 +331,9 @@ class NasaInfo extends React.Component{
           <VrButton onClick={this.handleClick.bind(this)}>
             <Text
               style={{
-                backgroundColor: '#0009',
-                fontSize: 0.2,
-                fontWeight: '400',
+                backgroundColor: this.state.bgcolor,
+                fontSize: 0.15,
+                fontWeight: '200',
                 layoutOrigin: [0.5, 0.5],
                 paddingLeft: 0.5,
                 paddingRight: 0.5,
@@ -332,5 +352,29 @@ class NasaInfo extends React.Component{
   }
 };
 
+class Pictures extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {name:""};
+    }
+    componentDidMount(){
 
+    }
+    componentDidUpdate(){
+        if(this.props.name !== this.state.name){
+            this.setState({name:this.props.name});
+        }
+    }
+    render(){
+        return(
+            <View style={{flexDirection:"column",width:1 }}>
+                <Image source={asset(this.state.name +"1.jpg")} style={{width:2,height:2}}></Image>
+                <View style={{height:0.5}}></View>
+                <Image source={asset(this.state.name +"2.jpg")} style={{width:2,height:2}}></Image>
+                
+            </View>
+        );
+
+    }
+}
 AppRegistry.registerComponent('Space', () => Space);
