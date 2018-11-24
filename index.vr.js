@@ -190,9 +190,7 @@ export default class Space extends React.Component {
             </VrButton>
         </View>     
         
-        <View style={{transform:[{translate:[4,4.5,-6]}]}}>
-            <Pictures name={this.state.planetName}/>
-        </View>
+        
 
       </View>
       
@@ -237,7 +235,7 @@ class Planet extends React.Component{
     //could fetch location and source from json
     return(
         <View>
-            <View style={{width:2,height:1.5}}>
+            <View style={{width:3,height:1.5}}>
                 <NasaInfo name = {this.props.name} message={this.props.message}/>
             </View>
             <AnimatedModel 
@@ -270,7 +268,7 @@ class Planet extends React.Component{
 class NasaInfo extends React.Component{
   constructor(props) {
     super(props);
-    this.state = {message:"  ", name:"" , info: [],bgcolor:"#0000"};
+    this.state = {message:"  ", name:"" , info: [],bgcolor:"#0000", size:0};
     
   }
   
@@ -284,6 +282,8 @@ class NasaInfo extends React.Component{
     if(this.props.name !== prevProps.name){
         console.log("New: " + this.props.name);
         console.log("Old: " + prevProps.name);
+        this.setState({size:0});
+        this.setState({bgcolor:"#0000"});
         this.setState({message:this.props.message})
         this.setState({name:this.props.name});
         fetch('http://localhost:3000/'+this.props.name)
@@ -316,12 +316,21 @@ class NasaInfo extends React.Component{
                 "\nVolume: " + theinfo.volume )
     }); 
     this.setState({bgcolor:"#0009"});
-      
+    this.setState({size:2});
     }else{
       this.setState({message: "  "});
       this.setState({bgcolor:"#0000"});
+      this.setState({size:0});
     }
 
+  }
+  changeSize(){
+      if (this.state.color == "#0000"){
+        return(0);
+      }
+      else{
+          return(2);
+      }
   }
   
   render(){
@@ -341,12 +350,15 @@ class NasaInfo extends React.Component{
                 paddingBottom: 0.5,
                 textAlign: 'center',
                 textAlignVertical: 'center',
-                transform: [{translate: [0,0,-5]}],
+                transform: [{translate: [0,0,-3.7]}],
               }}
             >
             {this.state.message}
             </Text>
           </VrButton>
+          <View style={{transform:[{translate:[4,4.7,-6]}]}}>
+            <Pictures name={this.state.name} size={this.state.size}/>
+          </View>
       </View>
     );
   }
@@ -355,7 +367,7 @@ class NasaInfo extends React.Component{
 class Pictures extends React.Component{
     constructor(props){
         super(props);
-        this.state = {name:""};
+        this.state = {name:"", size:this.props.size};
     }
     componentDidMount(){
 
@@ -364,13 +376,16 @@ class Pictures extends React.Component{
         if(this.props.name !== this.state.name){
             this.setState({name:this.props.name});
         }
+        if(this.props.size !== this.state.size){
+            this.setState({size: this.props.size});
+        }
     }
     render(){
         return(
             <View style={{flexDirection:"column",width:1 }}>
-                <Image source={asset(this.state.name +"1.jpg")} style={{width:2,height:2}}></Image>
+                <Image source={asset(this.state.name +"1.jpg")} style={{width:this.state.size,height:this.state.size}}></Image>
                 <View style={{height:0.5}}></View>
-                <Image source={asset(this.state.name +"2.jpg")} style={{width:2,height:2}}></Image>
+                <Image source={asset(this.state.name +"2.jpg")} style={{width:this.state.size,height:this.state.size}}></Image>
                 
             </View>
         );
