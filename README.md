@@ -1,3 +1,5 @@
+DEMO temporarily available at http://deepblue.camosun.bc.ca/~cst157/planets.html
+
 # React-VR-Planets
 
 a react vr web app that shows planets and some information about them
